@@ -1,3 +1,19 @@
+// Recipes API
+//
+// This is a sample recipes API.
+// You can find out more about the API at https://github.com/luoshengyue/gin_project.
+//
+// Schemes: http
+// Host: localhost:8080
+// BasePath: /
+// Version: 1.0.0
+// Contact: luoyuehe <bancangbaize@gmail.com> https://sodasweet.cn
+//
+// Consumes:
+// - application/json
+// Produces:
+// - application/json
+// swagger:meta
 package main
 
 import (
@@ -10,6 +26,7 @@ import (
 	"time"
 )
 
+// swagger:parameters recipes newRecipe
 type Recipe struct {
 	ID  string  `json:"id"`
 	Name    string  `json:"name"`

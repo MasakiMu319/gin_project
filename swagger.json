@@ -1,0 +1,25 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "schemes": [
+    "http"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "This is a sample recipes API.\nYou can find out more about the API at https://github.com/luoshengyue/gin_project.",
+    "title": "Recipes API",
+    "contact": {
+      "name": "luoyuehe",
+      "url": "https://sodasweet.cn",
+      "email": "bancangbaize@gmail.com"
+    },
+    "version": "1.0.0"
+  },
+  "host": "localhost:8080",
+  "basePath": "/",
+  "paths": {}
+}
