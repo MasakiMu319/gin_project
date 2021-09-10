@@ -188,7 +188,7 @@ func SearchRecipesHandler(c *gin.Context)  {
 }
 
 var recipes []Recipe
-var MONGO_URI ="mongodb://admin:1596034420ze@localhost:27017/test?authSource=admin"
+var MONGO_URI ="mongodb://admin:password@localhost:27017/test?authSource=admin"
 var MONGO_DATABASE = "demo"
 func init()  {
 	recipes = make([]Recipe, 0)
