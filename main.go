@@ -17,10 +17,15 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/xid"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -183,11 +188,31 @@ func SearchRecipesHandler(c *gin.Context)  {
 }
 
 var recipes []Recipe
-
+var MONGO_URI ="mongodb://admin:1596034420ze@localhost:27017/test?authSource=admin"
+var MONGO_DATABASE = "demo"
 func init()  {
 	recipes = make([]Recipe, 0)
 	file, _ := ioutil.ReadFile("F:\\新下载\\Building-Distributed-Applications-in-Gin-main\\chapter02\\recipes.json")
 	_ = json.Unmarshal([]byte(file), &recipes)
+
+	ctx := context.Background()
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(MONGO_URI))
+	if err = client.Ping(context.TODO(), readpref.Primary()); err != nil {
+		log.Fatal(err)
+	}
+	log.Println("Connected to MongoDB")
+
+	var listOfRecipes []interface{}
+	for _, recipe := range recipes {
+		listOfRecipes = append(listOfRecipes, recipe)
+	}
+
+	collection := client.Database(MONGO_DATABASE).Collection("recipes")
+	insertManyResult, err := collection.InsertMany(ctx, listOfRecipes)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("Inserted recipes: ", len(insertManyResult.InsertedIDs))
 }
 
 func main() {
