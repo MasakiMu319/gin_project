@@ -34,8 +34,8 @@ import (
 var MONGO_URI ="mongodb://admin:1596034420ze@localhost:27017/test?authSource=admin"
 var MONGO_DATABASE = "demo"
 
+var authHandler *handlers.AuthHandler
 var recipesHandler *handlers.RecipesHandler
-var recipes []models.Recipe
 
 func init()  {
 	recipes := make([]models.Recipe, 0)
@@ -80,13 +80,22 @@ func init()  {
 	redisClient.FlushDB()
 
 	recipesHandler = handlers.NewRecipesHandler(ctx, collection, redisClient)
+
+	collectionUsers := client.Database(MONGO_DATABASE).Collection("users")
+	authHandler = handlers.NewAuthHandler(ctx, collectionUsers)
 }
 
 func main() {
 	router := gin.Default()
-	router.POST("/recipes", recipesHandler.NewRecipeHandler)
 	router.GET("/recipes", recipesHandler.ListRecipesHandler)
-	router.PUT("/recipes/:id", recipesHandler.UpdateRecipeHandler)
-	router.DELETE("/recipes/:id",recipesHandler.DeleteRecipeHandler)
+	router.POST("/signin", authHandler.SignInHandler)
+	router.POST("/refresh", authHandler.RefreshHandler)
+	authorized := router.Group("/")
+	authorized.Use(handlers.AuthMiddleware())
+	{
+		authorized.POST("/recipes", recipesHandler.NewRecipeHandler)
+		authorized.PUT("/recipes/:id", recipesHandler.UpdateRecipeHandler)
+		authorized.DELETE("/recipes/:id", recipesHandler.DeleteRecipeHandler)
+	}
 	router.Run()
 }

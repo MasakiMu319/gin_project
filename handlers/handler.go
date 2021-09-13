@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"gin_project/models"
+	"github.com/dgrijalva/jwt-go"
 	"log"
 	"net/http"
 	"time"
@@ -21,6 +22,8 @@ type RecipesHandler struct {
 	redisClient *redis.Client
 }
 
+var X_API_KEY = "eUbP9shywUygMx7u"
+
 func NewRecipesHandler(ctx context.Context, collection *mongo.Collection, redisClient *redis.Client) *RecipesHandler {
 	return &RecipesHandler{
 		collection:  collection,
@@ -29,6 +32,22 @@ func NewRecipesHandler(ctx context.Context, collection *mongo.Collection, redisC
 	}
 }
 
+func AuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		tokenValue := c.GetHeader("Authorization")
+		claims := &Claims{}
+		tkn, err := jwt.ParseWithClaims(tokenValue, claims, func(token *jwt.Token) (interface{}, error) {
+			return []byte(JWT_SECRET), nil
+		})
+		if err != nil {
+			c.AbortWithStatus(http.StatusUnauthorized)
+		}
+		if tkn == nil || !tkn.Valid {
+			c.AbortWithStatus(http.StatusUnauthorized)
+		}
+		c.Next()
+	}
+}
 // swagger:operation GET /recipes recipes listRecipes
 // Returns list of recipes
 // ---
@@ -80,6 +99,12 @@ func (handler *RecipesHandler) ListRecipesHandler(c *gin.Context) {
 //     '400':
 //         description: Invalid input
 func (handler *RecipesHandler) NewRecipeHandler(c *gin.Context) {
+	if c.GetHeader("X-API-KEY") != X_API_KEY {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error":"API key not provided or invalid",
+		})
+		return
+	}
 	var recipe models.Recipe
 	if err := c.ShouldBindJSON(&recipe); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
